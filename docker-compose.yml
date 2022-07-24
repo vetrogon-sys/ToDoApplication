@@ -1,0 +1,47 @@
+version: '3.5'
+
+#networks:
+#  books-network:
+#
+#volumes:
+#  mysql-data:
+
+services:
+
+  postgresdb:
+    image: postgres:14.1-alpine
+    container_name: postgresdb
+    restart: always
+    environment:
+      - POSTGRES_USER={POSTGRES_USER}
+      - POSTGRES_PASSWORD={POSTGRES_PASSWORD}
+      - POSTGRES_DB={POSTGRESS_DATABASE}
+    ports:
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+
+  todo-be:
+    image: 'docker-spring-boot-postgres:latest'
+    container_name: todo-be
+    build: ./src-be/
+    ports:
+      - 8081:8081
+    environment:
+      POSTGRESS_DATABASE: ${MYSQL_DATABASE}
+      POSTGRESS_USER: ${MYSQL_USER}
+      POSTGRESS_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - postgresdb
+
+  todo-fe:
+    container_name: todo-fe
+    build: ./src-fe/
+    ports:
+      - 3200:3200
+    depends_on:
+      - todo-be
+
+volumes:
+  db:
+    driver: local
